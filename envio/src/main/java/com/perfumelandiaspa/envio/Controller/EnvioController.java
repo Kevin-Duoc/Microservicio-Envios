@@ -9,7 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.perfumelandiaspa.envio.Model.EnvioDTO;
+import com.perfumelandiaspa.envio.Model.Entity.EnvioEntity;
 import com.perfumelandiaspa.envio.Service.EnvioService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,14 +24,33 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 //import org.springframework.web.bind.annotation.RequestParam;
 
-
-
 @RestController //el controlador trabaja con un REST
-@RequestMapping("/envios")
+@RequestMapping("/api/v1/envios")
 public class EnvioController { //el controller es el que interactua con el cliente
     @Autowired
     private EnvioService envioService;
     
+    @Operation(
+        summary = "Crea un nuevo envio",
+        description = "Este EndPoint crea un nuevo envio y lo almacena en la base de datos",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Envio creado exitosamente",
+                content = @Content(schema = @Schema(implementation = String.class))//Devuelve un cuerpo tipo Json
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "Solicitud invalida",
+                content = @Content()//no hay cuerpo en la respuesta por ende vacio
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Recurso no fue encontrado",
+                content = @Content()//no hay cuerpo en la respuesta por ende vacio
+            )
+        }
+    )
     //agrega repartidor solamente, la hora se asigna local
     @PostMapping
     public ResponseEntity<?> crearEnvio(@RequestBody EnvioDTO envioDTO) {
@@ -38,7 +64,27 @@ public class EnvioController { //el controller es el que interactua con el clien
         }
     }
 
-    //busca por la id
+    @Operation(
+        summary = "Buscar Envio",
+        description = "Este EndPoint se encarga de buscar un envio almacenado en la DB través de su ID",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Envio encontrado exitosamente",
+                content = @Content(schema = @Schema(implementation = EnvioEntity.class))
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Recurso no fue encontrado",
+                content = @Content()
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Error interno en el servidor",
+                content = @Content()
+            )
+        }
+    )
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerEnvio(@PathVariable Long id) {
         try {
@@ -52,6 +98,32 @@ public class EnvioController { //el controller es el que interactua con el clien
         }
     }
     
+    @Operation(
+        summary = "Eliminar Envio",
+        description = "Elimina un envio que se encuentra en la DB por su ID",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description =  "Vendedor encontrado y eliminado correctamente",
+                content = @Content(schema = @Schema(implementation = String.class))
+            ),
+            @ApiResponse(
+                responseCode = "400",
+                description = "Solicitud invalida",
+                content = @Content()
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Recurso no fue encontrado",
+                content = @Content()
+            ),
+            @ApiResponse(
+                responseCode = "500",
+                description = "Error interno en el servidor",
+                content = @Content()
+            )
+        }
+    )
     @PostMapping("/eliminar")
     public ResponseEntity<?> eliminarEnvio(@RequestBody Map<String, Long> request) {
         try {
@@ -68,35 +140,4 @@ public class EnvioController { //el controller es el que interactua con el clien
                     .body("Error interno al eliminar: " + e.getMessage());
         }
     }
-    // @PostMapping("/eliminar/{id}")  
-    // public ResponseEntity<?> eliminarEnvio(@PathVariable Long id) {  
-    //     try {  
-    //         envioService.eliminarEnvio(id);  
-    //         return ResponseEntity.ok("Envío eliminado correctamente");  
-    //     } catch (NoSuchElementException e) {  
-    //         return ResponseEntity.notFound().build();  
-    //     } catch (Exception e) {  
-    //         return ResponseEntity.internalServerError().body("Error al eliminar: " + e.getMessage());  
-    //     }  
-    // }
 }
-    // @PostMapping("/envios")
-    // //ResonseEntity <-- responder segun accion o resultado
-    // //404 --> no se encuentra el recurso
-    // //200 --> ok
-    // public ResponseEntity<String> obtenerEnvio(@RequestBody EnvioDTO envio) //con el RequestBody se le da el cuerpo del Json
-    // {   
-    //     return ResponseEntity.ok(envioService.generarEnvio(envio));
-    // }
-
-
-    // @GetMapping("/obtenerEnvio/{idEnvio}")
-    // public ResponseEntity<EnvioDTO> obtenerEnvioEntity(@PathVariable int idEnvio)
-    // {
-    //     EnvioDTO envio = envioService.obtenerEnvio(idEnvio);
-    //     if (envio != null) {
-    //         return ResponseEntity.ok(envio);
-    //     }
-    //     return ResponseEntity.notFound().build(); //notFound si manda un parametro que no corresponde, sigue funcionando pero manda 404
-    // }
-    
